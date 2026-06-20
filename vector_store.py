@@ -12,6 +12,7 @@
 # FAISS stores all these number-lists and finds the closest ones to your query.
 
 import os
+import streamlit as st
 from langchain_community.vectorstores import FAISS
 from config import get_embeddings, FAISS_INDEX_PATH
 
@@ -53,6 +54,7 @@ def create_vector_store(text_chunks):
 
     except Exception as e:
         print(f"❌ Error creating vector store: {e}")
+        st.error(f"Vector DB Error: {str(e)}")  # Shows error in UI
         return None
 
 
