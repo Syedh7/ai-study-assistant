@@ -17,21 +17,34 @@ import os
 from dotenv import load_dotenv
 from langchain_google_genai import GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI
 
-# Load the .env file into environment variables
-load_dotenv()
+# ── Load API Key ───────────────────────────────────────────────────────────
+# Strategy: Try Streamlit secrets first (works on Streamlit Cloud)
+# If not found, fall back to .env file (works locally)
 
-# Read the API key
-GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+GOOGLE_API_KEY = None
 
+# First try: Streamlit secrets (used when deployed on Streamlit Cloud)
+try:
+    import streamlit as st
+    GOOGLE_API_KEY = st.secrets.get("GOOGLE_API_KEY", None)
+except Exception:
+    pass  # Not running in Streamlit context, try .env next
+
+# Second try: .env file (used during local development)
+if not GOOGLE_API_KEY:
+    load_dotenv()
+    GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+
+# If still not found, raise a clear error
 if not GOOGLE_API_KEY:
     raise ValueError(
         "❌ GOOGLE_API_KEY not found! "
-        "Make sure your .env file exists and contains GOOGLE_API_KEY=your_key"
+        "For local use: add it to your .env file. "
+        "For deployment: add it to Streamlit Cloud secrets."
     )
 
 # ── Embedding Model ────────────────────────────────────────────────────────
 # Used to convert text into numerical vectors (numbers that represent meaning)
-# gemini-embedding-001 is Google's recommended embedding model
 EMBEDDING_MODEL = "models/gemini-embedding-001"
 
 # ── LLM Model ─────────────────────────────────────────────────────────────
