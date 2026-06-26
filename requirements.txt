@@ -10,3 +10,6 @@ pypdf
 faiss-cpu
 python-dotenv
 tiktoken
+pytesseract
+pdf2image
+Pillow
