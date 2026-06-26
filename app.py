@@ -143,13 +143,16 @@ with st.sidebar:
         s1 = st.empty(); s2 = st.empty(); s3 = st.empty()
 
         s1.markdown('<p class="step-active">⏳ Extracting text...</p>', unsafe_allow_html=True)
-        text = extract_text_from_pdf(uploaded_file)
+        text, ocr_used = extract_text_from_pdf(uploaded_file)
 
         if not text:
-            st.error("❌ Could not extract text. Use a text-based PDF.")
+            st.error("❌ Could not extract text from this PDF.")
         else:
             pages = text.count("--- Page")
-            s1.markdown('<p class="step-done">✅ Text extracted</p>', unsafe_allow_html=True)
+            if ocr_used:
+                s1.markdown('<p class="step-done">✅ Text extracted (via OCR 🔍)</p>', unsafe_allow_html=True)
+            else:
+                s1.markdown('<p class="step-done">✅ Text extracted</p>', unsafe_allow_html=True)
 
             s2.markdown('<p class="step-active">⏳ Chunking text...</p>', unsafe_allow_html=True)
             chunks = get_text_chunks(text)
