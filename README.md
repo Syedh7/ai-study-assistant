@@ -105,5 +105,4 @@ streamlit run app.py
 
 ## 👨‍💻 Built For
 
-TekoraAI Internship Selection Project  
 B.Tech AIML — AI Study Assistant using RAG
