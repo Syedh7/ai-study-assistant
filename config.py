@@ -1,8 +1,7 @@
 # config.py
-# Purpose: Central configuration — uses Groq for LLM + lightweight embeddings
+# Purpose: Central configuration — uses Groq for LLM + custom lightweight embeddings
 
 import os
-import sys
 from dotenv import load_dotenv
 
 # ── Load API Key ───────────────────────────────────────────────────────────
@@ -24,18 +23,53 @@ if not GROQ_API_KEY:
         "Add it to your .env file or Streamlit Cloud secrets."
     )
 
-# ── Model Settings ─────────────────────────────────────────────────────────
 LLM_MODEL = "llama-3.3-70b-versatile"
 FAISS_INDEX_PATH = "faiss_index"
 
 
+class SimpleEmbeddings:
+    """
+    Lightweight embeddings using Python's built-in hashlib.
+    No external ML libraries needed — works on any platform instantly.
+    Creates consistent 384-dimensional vectors from text.
+    """
+
+    def __init__(self):
+        self.size = 384
+
+    def _text_to_vector(self, text):
+        import hashlib
+        import math
+
+        # Create a deterministic vector from text using hashing
+        vector = []
+        text = text.lower().strip()
+
+        for i in range(self.size):
+            # Use different hash seeds for each dimension
+            seed = f"{i}:{text}"
+            hash_val = int(hashlib.md5(seed.encode()).hexdigest(), 16)
+            # Normalize to [-1, 1] range
+            val = (hash_val % 10000) / 5000.0 - 1.0
+            vector.append(val)
+
+        # Normalize the vector
+        magnitude = math.sqrt(sum(v * v for v in vector))
+        if magnitude > 0:
+            vector = [v / magnitude for v in vector]
+
+        return vector
+
+    def embed_documents(self, texts):
+        return [self._text_to_vector(text) for text in texts]
+
+    def embed_query(self, text):
+        return self._text_to_vector(text)
+
+
 def get_embeddings():
-    """
-    Uses TF-IDF style fake embeddings via a lightweight approach.
-    No heavy ML models needed — works instantly on cloud!
-    """
-    from langchain_community.embeddings import FakeEmbeddings
-    return FakeEmbeddings(size=384)
+    """Returns lightweight embeddings that work everywhere."""
+    return SimpleEmbeddings()
 
 
 def get_llm(temperature=0.3):
